@@ -26,7 +26,7 @@ export default class Button extends PIXI.Sprite {
 
     _onHover() {
         this._isHover = true;
-        if(this._isActive) {
+        if (this._isActive) {
             return;
         }
         this._updateTexture("hover");
@@ -34,7 +34,7 @@ export default class Button extends PIXI.Sprite {
 
     _onOut() {
         this._isHover = false;
-        if(this._isActive) {
+        if (this._isActive) {
             return;
         }
         this._updateTexture("default");
@@ -47,7 +47,7 @@ export default class Button extends PIXI.Sprite {
 
     _onUp() {
         this._isActive = false;
-        if(this._isHover) {
+        if (this._isHover) {
             this._updateTexture("hover");
             return;
         }

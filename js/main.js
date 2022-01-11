@@ -25,7 +25,7 @@ function createButtons() {
     const label = {
         text: "Label text",
         style: {
-            fill: "green",
+            fill: "#fff",
             fontSize: "26px",
             fontFamily: "Arial, sans-serif",
         },
@@ -41,7 +41,19 @@ function createButtons() {
     const button2 = new Button({textures});
     button2.x = 250;
     button2.y = 250;
-    button2.setCallback(button2.disable);
+    button2.disable();
+
+    setTimeout(() => {
+        button2.enable();
+    }, 2500);
 
     app.stage.addChild(button2);
+
+    const button3 = new Button({textures});
+    button3.x = 450;
+    button3.y = 150;
+
+    button3.setCallback(button3.disable)
+
+    app.stage.addChild(button3);
 }
