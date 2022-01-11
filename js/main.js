@@ -1,7 +1,7 @@
 import Button from "./button.js";
 
-const {Application, Loader} = PIXI;
-const app = new Application({backgroundColor: 0x1099bb});
+const { Application, Loader } = PIXI;
+const app = new Application({ backgroundColor: 0x1099bb });
 
 document.body.appendChild(app.view);
 
@@ -10,71 +10,38 @@ Loader.shared
     .add("down", "./images/button-active.png")
     .add("hover", "./images/button-hover.png")
     .add("disabled", "./images/button-disabled.png")
-    .load(setup);
+    .load(createButtons);
 
-function setup() {
-    createButton();
-}
-
-function createButton() {
-    const {up, down, hover, disabled} = Loader.shared.resources;
+function createButtons() {
+    const { up, down, hover, disabled } = Loader.shared.resources;
 
     const textures = {
-        up: up.texture,
+        default: up.texture,
         down: down.texture,
         hover: hover.texture,
-        disabled: disabled.texture
+        disabled: disabled.texture,
     };
+
     const label = {
-        text: 'Default button',
+        text: "Label text",
         style: {
-            fill: '#ffffff',
-            fontSize: '16px',
-            fontFamily: 'Arial, sans-serif',
+            fill: "green",
+            fontSize: "26px",
+            fontFamily: "Arial, sans-serif",
         },
     };
 
     const button = new Button({
         textures,
-        label
+        label,
     });
 
-    console.log(button)
-
     app.stage.addChild(button);
-    //button.disable();
 
-    // const button = new Button({
-    //     x: 20,
-    //     y: 20,
-    //     width: 226,
-    //     height: 96,
-    //     texture: defaultTexture,
-    // });
-    //
-    // button
-    //     .addAction('pointerdown', onButtonDown)
-    //     .addAction('pointerup', onButtonUp)
-    //     .addAction('pointerover', onButtonOver)
-    //     .addAction('pointerout', onButtonOut);
-    //
-    // function onButtonDown() {
-    //     this.updateTexture(pressedTexture);
-    // }
-    // function onButtonUp() {
-    //     this.updateTexture(defaultTexture);
-    // }
-    //
-    // function onButtonOver() {
-    //     this.updateTexture(overTexture);
-    // }
-    //
-    // function onButtonOut() {
-    //     this.updateTexture(defaultTexture);
-    // }
-    //
+    const button2 = new Button({textures});
+    button2.x = 250;
+    button2.y = 250;
+    button2.setCallback(button2.disable);
 
+    app.stage.addChild(button2);
 }
-
-
-
