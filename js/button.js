@@ -7,7 +7,7 @@ export default class Button extends PIXI.Sprite {
 
     _init() {
         this.buttonMode = true;
-        this._isActive = false;
+        this._isPressed = false;
         this._isHover = false;
         this._switchEnabledState(true);
         this._setEvents();
@@ -26,7 +26,7 @@ export default class Button extends PIXI.Sprite {
 
     _onHover() {
         this._isHover = true;
-        if (this._isActive) {
+        if(this._isPressed) {
             return;
         }
         this._updateTexture("hover");
@@ -34,41 +34,32 @@ export default class Button extends PIXI.Sprite {
 
     _onOut() {
         this._isHover = false;
-        if (this._isActive) {
+        if(this._isPressed) {
             return;
         }
         this._updateTexture("default");
     }
 
     _onDown() {
-        this._isActive = true;
+        this._isPressed = true;
         this._updateTexture("down");
     }
 
     _onUp() {
-        this._isActive = false;
-        if (this._isHover) {
-            this._updateTexture("hover");
-            return;
-        }
-        this._updateTexture("default");
+        this._isPressed = false;
+        this._updateTexture(this._isHover ? "hover" : "default");
     }
 
     _switchEnabledState(isEnabled) {
-        if (!isEnabled) {
-            this._updateTexture("disabled");
-        } else {
-            this._updateTexture("default");
-        }
+        this._updateTexture(isEnabled ? "default" : "disabled");
         this._isEnabled = isEnabled;
         this.interactive = isEnabled;
     }
 
     _updateTexture(texture) {
-        if (!this._options.textures[texture]) {
-            return;
+        if (this._options.textures[texture]) {
+            this.texture = this._options.textures[texture];
         }
-        this.texture = this._options.textures[texture];
     }
 
     _addLabel() {
