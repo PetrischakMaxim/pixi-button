@@ -1,21 +1,32 @@
-import {Sprite, Text} from "../pixi/pixi.js"
 
-export default class Button extends Sprite {
-    private _options: object;
+interface Options {
+    label?: {
+        text: string,
+        style: object
+    };
+    textures?: object;
+}
+
+export default class Button extends PIXI.Sprite {
+    private _options: Options;
+    private _label: PIXI.Text;
     private _isPressed: boolean;
     private _isHover: boolean;
     private _isEnabled: boolean;
 
+    private width: number;
+    private height: number;
+    private texture: any;
     buttonMode: boolean;
     interactive: boolean;
 
-    constructor(options: object = {}) {
+    constructor(options: object) {
         super();
         this._options = options;
         this._init();
     }
 
-    _init() {
+    private _init() {
         this.buttonMode = true;
         this._isPressed = false;
         this._isHover = false;
@@ -26,15 +37,19 @@ export default class Button extends Sprite {
         }
     }
 
-    _setEvents() {
-        this.on("pointerover", this._onHover)
-            .on("pointerout", this._onOut)
-            .on("pointerdown", this._onDown)
-            .on("pointerup", this._onUp)
-            .on("pointerupoutside", this._onUp);
+    private _setEvents() {
+        this._addEvent("pointerover", this._onHover)
+        this._addEvent("pointerout", this._onOut)
+        this._addEvent("pointerdown", this._onDown)
+        this._addEvent("pointerup", this._onUp)
+        this._addEvent("pointerupoutside", this._onUp);
     }
 
-    _onHover() {
+    private _addEvent(eventName: string, callback: () => void) {
+        super.on(eventName, callback);
+    }
+
+    private _onHover() {
         this._isHover = true;
         if (this._isPressed) {
             return;
@@ -42,7 +57,7 @@ export default class Button extends Sprite {
         this._updateTexture("hover");
     }
 
-    _onOut() {
+    private _onOut() {
         this._isHover = false;
         if (this._isPressed) {
             return;
@@ -50,45 +65,46 @@ export default class Button extends Sprite {
         this._updateTexture("default");
     }
 
-    _onDown() {
+    private _onDown() {
         this._isPressed = true;
         this._updateTexture("down");
     }
 
-    _onUp() {
+    private _onUp() {
         this._isPressed = false;
         this._updateTexture(this._isHover ? "hover" : "default");
     }
 
-    _switchEnabledState(isEnabled) {
+    private _switchEnabledState(isEnabled: boolean): void {
         this._updateTexture(isEnabled ? "default" : "disabled");
         this._isEnabled = isEnabled;
         this.interactive = isEnabled;
     }
 
-    _updateTexture(texture) {
+    private _updateTexture(texture: string): void {
         if (this._options.textures[texture]) {
             this.texture = this._options.textures[texture];
         }
     }
 
-    _addLabel() {
-        this._label = new Text(this._options.label.text, this._options.label.style);
+    private _addLabel() {
+        this._label = new PIXI.Text(this._options.label.text, this._options.label.style);
         this._label.anchor.set(0.5);
         this._label.x = this.width / 2;
         this._label.y = this.height / 2;
-        this.addChild(this._label);
+        super.addChild(this._label);
     }
 
-    setCallback(callback: () => void) {
-        this.on("pointertap", callback);
+    public setCallback(callback: () => void) {
+        this._addEvent("pointertap", callback);
     }
 
-    disable() {
+    public disable() {
         this._switchEnabledState(false);
     }
 
-    enable() {
+    public enable() {
         this._switchEnabledState(true);
     }
+
 }
