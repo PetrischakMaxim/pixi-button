@@ -1,96 +1,84 @@
-export default class Button extends PIXI.Container {
-
+export default class Button extends PIXI.Sprite {
     constructor(options = {}) {
         super();
-        this.options = this.setOptions(options);
-        this.init();
+        this._options = options;
+        this._init();
     }
 
-    setOptions(options) {
-        const defaultOptions = {
-            width: 160,
-            height: 40,
-            texture: null,
-            x: 0,
-            y: 0,
-            fill: 0xFF3300,
-            label: 'Default button',
-            labelStyle: {
-                fill: '#ffffff',
-                fontSize: '16px',
-                fontFamily: 'Arial, sans-serif',
-            },
-            disabled: false,
-        };
-
-        return {...defaultOptions, ...options};
-    }
-
-    init() {
-        this.id = this._generateId();
-        this.element = null;
+    _init() {
         this.buttonMode = true;
-        this.interactive = true;
-        this.x = this.options.x;
-        this.y = this.options.y;
-        this.disabled = this.options.disabled;
+        this._isPressed = false;
+        this._isHover = false;
+        this._switchEnabledState(true);
+        this._setEvents();
+        if (this._options.label) {
+            this._addLabel();
+        }
+    }
 
-        if(this.options.texture) {
-            this.drawTexture(this.options.texture);
+    _setEvents() {
+        this.on("pointerover", this._onHover)
+            .on("pointerout", this._onOut)
+            .on("pointerdown", this._onDown)
+            .on("pointerup", this._onUp)
+            .on("pointerupoutside", this._onUp);
+    }
+
+    _onHover() {
+        this._isHover = true;
+        if(this._isPressed) {
             return;
         }
-        this.drawGraphics();
+        this._updateTexture("hover");
     }
 
-    drawTexture(texture) {
-        this.element = new PIXI.Sprite(texture);
-        this.element.width = this.options.width;
-        this.element.height = this.options.height;
-        this.addChild(this.element);
-    }
-
-    drawGraphics() {
-        this.element = new PIXI.Graphics();
-        this.element.x = this.x;
-        this.element.y = this.y;
-        this.element.beginFill(this.options.fill);
-        this.element.drawRect(0, 0, this.options.width, this.options.height);
-        this.element.endFill();
-
-        if(this.options.label) {
-            this.addLabel();
+    _onOut() {
+        this._isHover = false;
+        if(this._isPressed) {
+            return;
         }
-        this.addChild(this.element);
+        this._updateTexture("default");
     }
 
-    addLabel() {
-        this.label = new PIXI.Text(this.options.label, this.options.labelStyle);
-        this.label.anchor.set(0.5);
-        this.label.x = this.element.width / 2;
-        this.label.y = this.element.height / 2;
-        this.element.addChild(this.label);
+    _onDown() {
+        this._isPressed = true;
+        this._updateTexture("down");
     }
 
-    updateLabel(label) {
-        this.label.text = label;
+    _onUp() {
+        this._isPressed = false;
+        this._updateTexture(this._isHover ? "hover" : "default");
     }
 
-    updateTexture(texture = this.options.texture) {
-        this.element.texture = texture;
+    _switchEnabledState(isEnabled) {
+        this._updateTexture(isEnabled ? "default" : "disabled");
+        this._isEnabled = isEnabled;
+        this.interactive = isEnabled;
     }
 
-    setDisabled() {
-       this.disabled = true;
-       this.interactive = false;
-       this.alpha = 0.5;
+    _updateTexture(texture) {
+        if (this._options.textures[texture]) {
+            this.texture = this._options.textures[texture];
+        }
     }
 
-    addAction(actionType, callback) {
-        this.on(actionType, callback);
-        return this;
+    _addLabel() {
+        this._label = new PIXI.Text(this._options.label.text, this._options.label.style);
+        this._label.anchor.set(0.5);
+        this._label.x = this.width / 2;
+        this._label.y = this.height / 2;
+        this.addChild(this._label);
     }
 
-    _generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    setCallback(callback) {
+        this.on("pointertap", callback);
+    }
+
+    disable() {
+        this._switchEnabledState(false);
+    }
+
+    enable() {
+        this._switchEnabledState(true);
     }
 }
