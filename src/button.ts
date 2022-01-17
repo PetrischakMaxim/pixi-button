@@ -1,12 +1,11 @@
-import {Sprite, Text} from "pixi.js";
+import {ITextStyle, Sprite, Text, Texture} from "pixi.js";
 
 interface Options {
     label?: {
-        text: string,
-        style: object
+        text?: string,
+        style?: Partial<ITextStyle>
     };
-    textures?: { [index: string]: any };
-
+    textures?: { [key: string]: Texture };
 }
 
 export default class Button extends Sprite {
@@ -14,12 +13,11 @@ export default class Button extends Sprite {
     private _label: Text;
     private _isPressed: boolean;
     private _isHover: boolean;
-    private _isEnabled: boolean;
 
     buttonMode: boolean;
     interactive: boolean;
 
-    constructor(options: object) {
+    constructor(options: Options) {
         super();
         this._options = options;
         this._init();
@@ -27,9 +25,10 @@ export default class Button extends Sprite {
 
     private _init() {
         this.buttonMode = true;
+        this.interactive = true;
         this._isPressed = false;
         this._isHover = false;
-        this._switchEnabledState(true);
+        this._updateTexture();
         this._setEvents();
         if (this._options.label) {
             this._addLabel();
@@ -57,7 +56,7 @@ export default class Button extends Sprite {
         if (this._isPressed) {
             return;
         }
-        this._updateTexture("default");
+        this._updateTexture();
     }
 
     private _onDown() {
@@ -70,13 +69,7 @@ export default class Button extends Sprite {
         this._updateTexture(this._isHover ? "hover" : "default");
     }
 
-    private _switchEnabledState(isEnabled: boolean): void {
-        this._updateTexture(isEnabled ? "default" : "disabled");
-        this._isEnabled = isEnabled;
-        this.interactive = isEnabled;
-    }
-
-    private _updateTexture(sourceName: string): void {
+    private _updateTexture(sourceName: string = "default"): void {
         if (this._options.textures[sourceName]) {
             this.texture = this._options.textures[sourceName];
         }
@@ -95,10 +88,12 @@ export default class Button extends Sprite {
     }
 
     public disable() {
-        this._switchEnabledState(false);
+        this.interactive = false;
+        this._updateTexture("disabled");
     }
 
     public enable() {
-        this._switchEnabledState(true);
+        this.interactive = true;
+        this._updateTexture();
     }
 }
