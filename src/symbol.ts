@@ -1,5 +1,6 @@
 import {Sprite, Texture} from "pixi.js";
 import {gsap} from "gsap";
+import {getRandomInt} from "./utils";
 
 interface SlotSymbol {
     startBounce(): Promise<void>;
@@ -13,39 +14,57 @@ interface SlotSymbol {
 
 export default class Symbol extends Sprite implements SlotSymbol {
 
+    private _startCoords: {
+        x: number,
+        y: number
+    };
+
     constructor(texture: Texture) {
         super(texture);
-    }
+        this._startCoords = null;
 
-    _bounce() {
-        gsap.to(this,
-            {
-                duration:  2 + Math.random() * (5 - 2),
-                y: 2 + Math.random() * (5 - 2),
-                ease: "bounce",
-            }
-        );
     }
 
     public startBounce(): Promise<void> {
+        this._startCoords = {
+            x: this.x,
+            y: this.y,
+        };
         return new Promise((resolve) => {
             gsap.to(this,
                 {
-                    duration: 1.5,
+                    duration: getRandomInt(1, 2),
+                    y: this.y - getRandomInt(5, 50),
                     ease: "bounce",
-                    y: this.y + 50,
-                    onComplete: resolve,
+                    onComplete: resolve
                 }
             );
         });
     }
 
     public moveOneSlot(): Promise<void> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve) => {
+            gsap.to(this,
+                {
+                    duration: getRandomInt(0.5, 1.5),
+                    y: this.y - this.height,
+                    onComplete: resolve
+                }
+            );
+        });
     }
 
     public endBounce(): Promise<void> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve) => {
+            gsap.to(this,
+                {
+                    duration: getRandomInt(0.5, 1.5),
+                    y: this._startCoords.y,
+                    ease: "bounce",
+                    onComplete: resolve
+                }
+            );
+        });
     }
 
     public setSymbol(name: Texture): void {
