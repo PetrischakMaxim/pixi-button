@@ -1,7 +1,8 @@
-import {Application, Loader} from "pixi.js";
+import {Application, Container, Loader,Graphics} from "pixi.js";
 import Button from "./button";
+import Symbol from "./symbol";
 
-const app = new Application({ backgroundColor: 0x1099bb });
+const app = new Application({backgroundColor: 0x1099bb});
 
 document.body.appendChild(app.view);
 
@@ -10,10 +11,13 @@ Loader.shared
     .add("down", "./images/button-active.png")
     .add("hover", "./images/button-hover.png")
     .add("disabled", "./images/button-disabled.png")
-    .load(createButtons);
+    .add("symbol-1", "./images/symbol-1.png")
+    .add("symbol-2", "./images/symbol-2.png")
+    .add("symbol-3", "./images/symbol-3.png")
+    .load(initScene);
 
-function createButtons() {
-    const { up, down, hover, disabled } = Loader.shared.resources;
+function createButton() {
+    const {up, down, hover, disabled} = Loader.shared.resources;
 
     const textures = {
         default: up.texture,
@@ -22,38 +26,37 @@ function createButtons() {
         disabled: disabled.texture,
     };
 
-    const label = {
-        text: "Label text",
-        style: {
-            fill: "#fff",
-            fontSize: "26px",
-            fontFamily: "Arial, sans-serif",
-        },
-    };
+    const button = new Button({textures});
+    button.x = app.view.width / 2 - button.width / 2;
+    button.y = app.view.height - button.height;
 
-    const button = new Button({
-        textures,
-        label,
-    });
-
-    app.stage.addChild(button);
-
-    const button2 = new Button({textures});
-    button2.x = 250;
-    button2.y = 250;
-    button2.disable();
-
-    setTimeout(() => {
-        button2.enable();
-    }, 2500);
-
-    app.stage.addChild(button2);
-
-    const button3 = new Button({textures});
-    button3.x = 450;
-    button3.y = 150;
-
-    button3.setCallback(button3.disable);
-
-    app.stage.addChild(button3);
+    return button;
 }
+
+function createReel(count = 3) {
+    const reelSize = 100;
+    const reelContainer = new Container();
+
+    reelContainer.width = reelContainer.height = reelSize;
+    reelContainer.x = app.view.width / 2 ;
+    reelContainer.y = 50;
+
+    for (let i = 1; i <= count; i++) {
+        const offset = i - 1;
+        const symbol = new Symbol(Loader.shared.resources[`symbol-${i}`].texture);
+        symbol.anchor.set(0.5);
+        symbol.width = symbol.height = reelSize;
+        symbol.y = offset * 5 + symbol.height * offset;
+        reelContainer.addChild(symbol);
+    }
+    return reelContainer;
+}
+
+function initScene() {
+    const button = createButton();
+    const reelContainer = createReel();
+
+    app.stage.addChild(button, reelContainer);
+}
+
+
