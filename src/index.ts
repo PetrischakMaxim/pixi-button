@@ -1,6 +1,8 @@
-import {Application, Container, Loader,Graphics} from "pixi.js";
+import {Application, Container, Loader, Graphics, Sprite} from "pixi.js";
+import {getRandomInt} from "./utils";
 import Button from "./button";
 import Symbol from "./symbol";
+
 
 const app = new Application({backgroundColor: 0x1099bb});
 
@@ -14,7 +16,7 @@ Loader.shared
     .add("symbol-1", "./images/symbol-1.png")
     .add("symbol-2", "./images/symbol-2.png")
     .add("symbol-3", "./images/symbol-3.png")
-    .load(initScene);
+    .load(init);
 
 function createButton() {
     const {up, down, hover, disabled} = Loader.shared.resources;
@@ -33,28 +35,40 @@ function createButton() {
     return button;
 }
 
-function createReel(count = 3) {
-    const reelSize = 100;
+function createReel(count = 1) {
+    const SYMBOL_SIZE = 100;
+
     const reelContainer = new Container();
 
-    reelContainer.width = reelContainer.height = reelSize;
-    reelContainer.x = app.view.width / 2 ;
-    reelContainer.y = 50;
-
-    for (let i = 1; i <= count; i++) {
-        const offset = i - 1;
-        const symbol = new Symbol(Loader.shared.resources[`symbol-${i}`].texture);
-        symbol.anchor.set(0.5);
-        symbol.width = symbol.height = reelSize;
-        symbol.y = offset * 5 + symbol.height * offset;
+    for (let j = 0; j < count; j++) {
+        const symbol = new Symbol(Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture);
+        symbol.scale.x = symbol.scale.y = Math.min(SYMBOL_SIZE / symbol.width, SYMBOL_SIZE / symbol.height);
+        symbol.y = SYMBOL_SIZE * 3;
         reelContainer.addChild(symbol);
     }
+
+    reelContainer.x = app.view.width / 2 - reelContainer.width / 2;
+    reelContainer.y = 0;
+
     return reelContainer;
 }
 
-function initScene() {
+function init() {
     const button = createButton();
     const reelContainer = createReel();
+    const symbol = reelContainer.children[0];
+
+    button.setCallback(onButtonClick);
+
+    function onButtonClick() {
+        this.disable()
+        symbol.startBounce()
+            .then(() => symbol.moveOneSlot())
+            .then(() => symbol.moveOneSlot())
+            .then(() => symbol.endBounce())
+            .then(() => symbol.setSymbol(Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture))
+            .then(() => this.enable())
+    }
 
     app.stage.addChild(button, reelContainer);
 }
