@@ -1,6 +1,6 @@
-import Button from "./button.js";
+import {Application, Loader} from "pixi.js";
+import Button from "./button";
 
-const { Application, Loader } = PIXI;
 const app = new Application({ backgroundColor: 0x1099bb });
 
 document.body.appendChild(app.view);
@@ -53,7 +53,7 @@ function createButtons() {
     button3.x = 450;
     button3.y = 150;
 
-    button3.setCallback(button3.disable)
+    button3.setCallback(button3.disable);
 
     app.stage.addChild(button3);
 }
