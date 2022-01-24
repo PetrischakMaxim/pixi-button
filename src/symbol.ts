@@ -4,32 +4,20 @@ import {getRandomInt} from "./utils";
 
 interface SlotSymbol {
     startBounce(): Promise<void>;
-
     moveOneSlot(): Promise<void>;
-
     endBounce(): Promise<void>;
-
     setSymbol(name: Texture): void;
 }
 
 export default class Symbol extends Sprite implements SlotSymbol {
 
-    private _startCoords: {
-        x: number,
-        y: number
-    };
+    private _startPosition: {x:number, y: number};
 
     constructor(texture: Texture) {
         super(texture);
-        this._startCoords = null;
-
     }
 
     public startBounce(): Promise<void> {
-        this._startCoords = {
-            x: this.x,
-            y: this.y,
-        };
         return new Promise((resolve) => {
             gsap.to(this,
                 {
@@ -59,7 +47,7 @@ export default class Symbol extends Sprite implements SlotSymbol {
             gsap.to(this,
                 {
                     duration: getRandomInt(0.5, 1.5),
-                    y: this._startCoords.y,
+                    y: this._startPosition.y,
                     ease: "bounce",
                     onComplete: resolve
                 }
@@ -69,5 +57,9 @@ export default class Symbol extends Sprite implements SlotSymbol {
 
     public setSymbol(name: Texture): void {
         this.texture = name;
+    }
+
+    public saveStartPosition(x: number, y: number) {
+        this._startPosition = {x, y};
     }
 }
