@@ -2,7 +2,7 @@ import {ITextStyle, Sprite, Text, Texture} from "pixi.js";
 
 interface Options {
     label?: {
-        text?: string,
+        text: string,
         style?: Partial<ITextStyle>
     };
     textures?: { [key: string]: Texture };
@@ -25,10 +25,9 @@ export default class Button extends Sprite {
 
     private _init() {
         this.buttonMode = true;
-        this.interactive = true;
+        this.enable();
         this._isPressed = false;
         this._isHover = false;
-        this._updateTexture();
         this._setEvents();
         if (this._options.label) {
             this._addLabel();
