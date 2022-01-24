@@ -38,12 +38,13 @@ function createButton() {
 
 function createSymbol() {
     const symbolSize = 100;
-    const symbol = new Symbol(Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture);
-    symbol.anchor.set(0.5);
-    symbol.y = symbolSize * 3;
-    symbol.x = app.view.width / 2;
-    symbol.scale.x = symbol.scale.y = Math.min(symbolSize / symbol.width, symbolSize / symbol.height);
-    symbol.saveStartPosition(symbol.x, symbol.y);
+
+    const symbol = new Symbol(
+        Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
+        app.view.width / 2,
+        symbolSize * 3,
+        symbolSize
+    );
 
     return symbol;
 }
