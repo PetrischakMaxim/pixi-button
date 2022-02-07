@@ -38,15 +38,35 @@ function createButton() {
 
 function createSymbol() {
     const symbolSize = 100;
+    const startY= symbolSize * 3;
 
-    const symbol = new Symbol(
-        Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
-        app.view.width / 2,
-        symbolSize * 3,
-        symbolSize
-    );
+    const animationOptions = {
+        start: {
+            duration: 1,
+            y: `-=${symbolSize}`,
+            repeat: 1,
+            yoyo: true,
+        },
+        move: {
+            duration: 1,
+            y: `-=${symbolSize}`,
+        },
+        end: {
+            duration: 1,
+            y: startY,
+            ease: "bounce",
+        }
+    };
 
-    return symbol;
+    const options = {
+        texture: Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
+        x: app.view.width / 2,
+        y: startY,
+        size: symbolSize,
+        animation: animationOptions
+    }
+
+    return new Symbol(options);
 }
 
 function init() {
@@ -57,13 +77,13 @@ function init() {
 
     app.stage.addChild(button, symbol);
 
-    function onButtonClick() {
+    async function onButtonClick() {
         this.disable()
-        symbol.startBounce()
-            .then(() => symbol.moveOneSlot())
-            .then(() => symbol.moveOneSlot())
-            .then(() => symbol.endBounce())
-            .then(() => this.enable())
+        await symbol.startBounce()
+        await symbol.moveOneSlot()
+        await symbol.moveOneSlot()
+        await symbol.endBounce()
+        await this.enable()
     }
 }
 
