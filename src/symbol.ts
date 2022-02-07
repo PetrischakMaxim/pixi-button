@@ -1,58 +1,54 @@
 import {Sprite, Texture} from "pixi.js";
 import {gsap} from "gsap";
-import {getRandomInt} from "./utils";
+import TweenVars = gsap.TweenVars;
 
 interface SlotSymbol {
     startBounce(): Promise<void>;
+
     moveOneSlot(): Promise<void>;
+
     endBounce(): Promise<void>;
+
     setSymbol(name: Texture): void;
+}
+
+interface GsapConfig {
+    start: Partial<TweenVars>,
+    move: Partial<TweenVars>,
+    end: Partial<TweenVars>,
+}
+
+interface Options {
+    texture: Texture,
+    x: number,
+    y: number,
+    size: number,
+    animation: GsapConfig
 }
 
 export default class Symbol extends Sprite implements SlotSymbol {
 
-    private _startPosition: { x: number, y: number };
+    private _options: Options;
 
-    constructor(texture: Texture, x: number, y: number, size: number) {
-        super(texture);
-        this.x = x;
-        this.y = y;
+    constructor(options: Options) {
+        super(options.texture);
+        this._options = options;
+        this.x = this._options.x;
+        this.y = this._options.y;
         this.anchor.set(0.5);
-        this.scale.x = this.scale.y = Math.min(size / this.width, size / this.height);
-        this._startPosition = {x, y};
+        this.scale.x = this.scale.y = Math.min(this._options.size / this.width, this._options.size / this.height);
     }
 
-    public startBounce(): Promise<void> {
-        return new Promise((resolve) => {
-            gsap.to(this, {
-                duration: getRandomInt(1, 2),
-                y: this.y - getRandomInt(5, 50),
-                ease: "bounce",
-                onComplete: resolve
-            });
-        });
+    public async startBounce() {
+        await gsap.to(this, this._options.animation.start);
     }
 
-    public moveOneSlot(): Promise<void> {
-        return new Promise((resolve) => {
-            gsap.to(this, {
-                duration: getRandomInt(0.5, 1.5),
-                y: this.y - this.height,
-                ease: "linear",
-                onComplete: resolve
-            });
-        });
+    public async moveOneSlot() {
+        await gsap.to(this, this._options.animation.move);
     }
 
-    public endBounce(): Promise<void> {
-        return new Promise((resolve) => {
-            gsap.to(this, {
-                duration: getRandomInt(0.5, 1.5),
-                y: this._startPosition.y,
-                ease: "bounce",
-                onComplete: resolve
-            });
-        });
+    public async endBounce() {
+        await gsap.to(this, this._options.animation.end);
     }
 
     public setSymbol(name: Texture): void {
