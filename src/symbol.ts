@@ -12,43 +12,36 @@ interface SlotSymbol {
     setSymbol(name: Texture): void;
 }
 
-interface GsapConfig {
+interface AnimationOptions {
     start: Partial<TweenVars>,
     move: Partial<TweenVars>,
     end: Partial<TweenVars>,
 }
 
-interface Options {
-    texture: Texture,
-    x: number,
-    y: number,
-    size: number,
-    animation: GsapConfig
-}
-
 export default class Symbol extends Sprite implements SlotSymbol {
 
-    private _options: Options;
+    private _animationOptions: AnimationOptions;
 
-    constructor(options: Options) {
-        super(options.texture);
-        this._options = options;
-        this.x = this._options.x;
-        this.y = this._options.y;
+    constructor(texture: Texture, size: number) {
+        super(texture);
         this.anchor.set(0.5);
-        this.scale.x = this.scale.y = Math.min(this._options.size / this.width, this._options.size / this.height);
+        this.scale.x = this.scale.y = Math.min(size / this.width, size / this.height);
+    }
+
+    public setupAnimation(options: AnimationOptions) {
+        this._animationOptions = {...options};
     }
 
     public async startBounce() {
-        await gsap.to(this, this._options.animation.start);
+        await gsap.to(this, this._animationOptions.start);
     }
 
     public async moveOneSlot() {
-        await gsap.to(this, this._options.animation.move);
+        await gsap.to(this, this._animationOptions.move);
     }
 
     public async endBounce() {
-        await gsap.to(this, this._options.animation.end);
+        await gsap.to(this, this._animationOptions.end);
     }
 
     public setSymbol(name: Texture): void {
