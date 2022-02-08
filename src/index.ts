@@ -38,7 +38,7 @@ function createButton() {
 
 function createSymbol() {
     const symbolSize = 100;
-    const startY= symbolSize * 3;
+    const startY = symbolSize * 3;
 
     const animationOptions = {
         start: {
@@ -58,15 +58,15 @@ function createSymbol() {
         }
     };
 
-    const options = {
-        texture: Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
-        x: app.view.width / 2,
-        y: startY,
-        size: symbolSize,
-        animation: animationOptions
-    }
+    const symbol = new Symbol(
+        Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
+        symbolSize
+    );
 
-    return new Symbol(options);
+    symbol.position.set(app.view.width / 2,startY);
+    symbol.setupAnimation(animationOptions);
+
+    return symbol;
 }
 
 function init() {
