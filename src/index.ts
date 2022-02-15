@@ -1,9 +1,7 @@
 import {Application, Loader} from "pixi.js";
-import {getRandomInt} from "./utils";
 import Button from "./button";
 import Symbol from "./symbol";
 import Reel from "./reel";
-
 
 const app = new Application({backgroundColor: 0x1099bb});
 
@@ -37,7 +35,21 @@ function createButton() {
     return button;
 }
 
-function init() {
+function createSymbol(index: number, size: number = 100) {
+    const options = {
+        texture: Loader.shared.resources[`symbol-${index}`].texture,
+        size: size,
+        position: {
+            x: 0,
+            y: index * size,
+        },
+        animationDuration: 0.5,
+    };
+
+    return new Symbol(options);
+}
+
+function createReelWithSymbols() {
 
     const reel = new Reel({
         count: 3,
@@ -45,51 +57,40 @@ function init() {
         countToMove: 1
     });
 
-    const symbolSize = 100;
-    const startY = symbolSize * 3;
-
-    const animationOptions = {
-        start: {
-            duration: 1,
-            y: `-=${symbolSize}`,
-            repeat: 1,
-            yoyo: true,
-        },
-        move: {
-            duration: 1,
-            y: `-=${symbolSize}`,
-        },
-        end: {
-            duration: 1,
-            y: startY,
-            ease: "bounce",
-        }
-    };
-
-    for (let i = 0; i < 3;i++) {
-        const symbol = new Symbol(
-            Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
-            symbolSize,
-        );
-        symbol.position.set(app.view.width / 2,symbolSize * i + 10);
-        symbol.setupAnimation(animationOptions);
+    for (let i = 1; i <= reel.count; i++) {
+        const symbol = createSymbol(i);
         reel.addChild(symbol);
     }
 
-    const symbol = reel.symbols[0];
-    const button = createButton();
+    reel.position.set(app.view.width / 2, 0);
 
-    button.setCallback(onButtonClick);
+    return reel;
+}
+
+function init() {
+
+    const reelElement = createReelWithSymbols();
+    const reelSymbols = reelElement.children as Array<Symbol>;
+
+    const buttonElement = createButton();
+
+    buttonElement.setCallback(onButtonClick);
+
     async function onButtonClick() {
-        this.disable()
-        await symbol.startBounce()
-        await symbol.moveOneSlot()
-        await symbol.moveOneSlot()
-        await symbol.endBounce()
-        await this.enable()
+        this.disable();
+
+        await Promise.all(reelSymbols.map(async (symbol) => {
+            await symbol.startBounce()
+            await symbol.moveOneSlot()
+            await symbol.moveOneSlot()
+            await symbol.endBounce()
+        }));
+
+        await this.enable();
     }
 
-    app.stage.addChild(button, reel);
+    app.stage.addChild(buttonElement, reelElement);
 }
+
 
 
