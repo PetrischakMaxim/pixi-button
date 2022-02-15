@@ -1,7 +1,10 @@
 import {Application, Loader} from "pixi.js";
+import {getRandomInt} from "./utils";
 import Button from "./button";
+import Symbol from "./symbol";
 
-const app = new Application({ backgroundColor: 0x1099bb });
+
+const app = new Application({backgroundColor: 0x1099bb});
 
 document.body.appendChild(app.view);
 
@@ -10,10 +13,13 @@ Loader.shared
     .add("down", "./images/button-active.png")
     .add("hover", "./images/button-hover.png")
     .add("disabled", "./images/button-disabled.png")
-    .load(createButtons);
+    .add("symbol-1", "./images/symbol-1.png")
+    .add("symbol-2", "./images/symbol-2.png")
+    .add("symbol-3", "./images/symbol-3.png")
+    .load(init);
 
-function createButtons() {
-    const { up, down, hover, disabled } = Loader.shared.resources;
+function createButton() {
+    const {up, down, hover, disabled} = Loader.shared.resources;
 
     const textures = {
         default: up.texture,
@@ -22,38 +28,63 @@ function createButtons() {
         disabled: disabled.texture,
     };
 
-    const label = {
-        text: "Label text",
-        style: {
-            fill: "#fff",
-            fontSize: "26px",
-            fontFamily: "Arial, sans-serif",
+    const button = new Button({textures});
+    button.anchor.set(0.5);
+    button.x = app.view.width / 2;
+    button.y = app.view.height - button.height - 50;
+
+    return button;
+}
+
+function createSymbol() {
+    const symbolSize = 100;
+    const startY = symbolSize * 3;
+
+    const animationOptions = {
+        start: {
+            duration: 1,
+            y: `-=${symbolSize}`,
+            repeat: 1,
+            yoyo: true,
         },
+        move: {
+            duration: 1,
+            y: `-=${symbolSize}`,
+        },
+        end: {
+            duration: 1,
+            y: startY,
+            ease: "bounce",
+        }
     };
 
-    const button = new Button({
-        textures,
-        label,
-    });
+    const symbol = new Symbol(
+        Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
+        symbolSize
+    );
 
-    app.stage.addChild(button);
+    symbol.position.set(app.view.width / 2,startY);
+    symbol.setupAnimation(animationOptions);
 
-    const button2 = new Button({textures});
-    button2.x = 250;
-    button2.y = 250;
-    button2.disable();
-
-    setTimeout(() => {
-        button2.enable();
-    }, 2500);
-
-    app.stage.addChild(button2);
-
-    const button3 = new Button({textures});
-    button3.x = 450;
-    button3.y = 150;
-
-    button3.setCallback(button3.disable);
-
-    app.stage.addChild(button3);
+    return symbol;
 }
+
+function init() {
+    const button = createButton();
+    const symbol = createSymbol();
+
+    button.setCallback(onButtonClick);
+
+    app.stage.addChild(button, symbol);
+
+    async function onButtonClick() {
+        this.disable()
+        await symbol.startBounce()
+        await symbol.moveOneSlot()
+        await symbol.moveOneSlot()
+        await symbol.endBounce()
+        await this.enable()
+    }
+}
+
+
