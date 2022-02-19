@@ -9,10 +9,12 @@ interface Options {
 export default class Reel extends Container {
 
     private _options: Options;
+    public isAnimated: boolean;
 
     constructor(options: Options) {
         super();
         this._options = {...options};
+        this.isAnimated = false;
     }
 
     public async moveSlots(callback: Function) {
