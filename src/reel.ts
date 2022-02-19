@@ -1,23 +1,34 @@
 import {Container} from "pixi.js";
-import Symbol from "./symbol";
 
 interface Options {
-    count: number;
-    speed: number;
-    countToMove: number;
+    symbolsCount: number;
+    animationSpeed: number;
+    moveCount: number;
 }
 
 export default class Reel extends Container {
+
     private _options: Options;
-    prevPosition: number;
 
     constructor(options: Options) {
         super();
         this._options = {...options};
-        this.prevPosition = 0;
     }
 
-    get count() {
-        return this._options.count;
+    public async moveSlots(callback: Function) {
+        for (let i = 0; i < this._options.moveCount; i++) {
+            await callback();
+        }
+    }
+
+    public addSymbols(callback: Function) {
+        for (let i = 1; i <= this._options.symbolsCount; i++) {
+            const symbol = callback(i);
+            this.addChild(symbol);
+        }
+    }
+
+    get animationSpeed() {
+        return this._options.animationSpeed;
     }
 }
