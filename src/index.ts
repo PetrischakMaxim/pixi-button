@@ -66,6 +66,22 @@ function init() {
     const reel = createReelWithSymbols();
     const symbols = reel.children as Array<Symbol>;
     const button = createButton();
+    button.setCallback(onButtonClick);
+
+    app.stage.addChild(button, reel);
+    app.ticker.add(changeSymbolPosition);
+
+    function changeSymbolPosition() {
+        if (reel.isAnimated) {
+            const lastSymbol = symbols.pop();
+            symbols.unshift(lastSymbol);
+            symbols.forEach((symbol, i) => {
+                symbol.y = symbol.size * i + symbol.size;
+            });
+
+            reel.isAnimated = false;
+        }
+    }
 
     async function animateSymbols() {
         await Promise.all(symbols.map(async (symbol) => {
@@ -77,7 +93,7 @@ function init() {
                 yoyo: true,
             });
 
-           await reel.moveSlots(async() => {
+            await reel.moveSlots(async () => {
                 await symbol.moveOneSlot({
                     duration: reel.animationSpeed,
                     y: `-=${symbol.size}`,
@@ -90,6 +106,8 @@ function init() {
                 ease: "bounce",
             });
         }));
+
+        reel.isAnimated = true;
     }
 
     async function onButtonClick() {
@@ -97,10 +115,6 @@ function init() {
         await animateSymbols();
         await this.enable();
     }
-
-    button.setCallback(onButtonClick);
-
-    app.stage.addChild(button, reel);
 }
 
 
