@@ -35,7 +35,7 @@ function createButton() {
     return button;
 }
 
-function createSymbol(index: number, size: number = 100) {
+function createSymbol(index: number, size: number = 75) {
     const options = {
         texture: Loader.shared.resources[`symbol-${index}`].texture,
         size: size,
@@ -43,7 +43,6 @@ function createSymbol(index: number, size: number = 100) {
             x: 0,
             y: index * size,
         },
-        animationDuration: 0.5,
     };
 
     return new Symbol(options);
@@ -52,44 +51,56 @@ function createSymbol(index: number, size: number = 100) {
 function createReelWithSymbols() {
 
     const reel = new Reel({
-        count: 3,
-        speed: 3,
-        countToMove: 1
+        symbolsCount: 3,
+        moveCount: 2,
+        animationSpeed: 0.5,
     });
 
-    for (let i = 1; i <= reel.count; i++) {
-        const symbol = createSymbol(i);
-        reel.addChild(symbol);
-    }
-
-    reel.position.set(app.view.width / 2, 0);
+    reel.addSymbols(createSymbol);
+    reel.position.set(app.view.width / 2, 100);
 
     return reel;
 }
 
 function init() {
+    const reel = createReelWithSymbols();
+    const symbols = reel.children as Array<Symbol>;
+    const button = createButton();
 
-    const reelElement = createReelWithSymbols();
-    const reelSymbols = reelElement.children as Array<Symbol>;
+    async function animateSymbols() {
+        await Promise.all(symbols.map(async (symbol) => {
 
-    const buttonElement = createButton();
+            await symbol.startBounce({
+                duration: reel.animationSpeed,
+                y: `-=${symbol.size}`,
+                repeat: 2,
+                yoyo: true,
+            });
 
-    buttonElement.setCallback(onButtonClick);
+           await reel.moveSlots(async() => {
+                await symbol.moveOneSlot({
+                    duration: reel.animationSpeed,
+                    y: `-=${symbol.size}`,
+                });
+            });
+
+            await symbol.endBounce({
+                duration: reel.animationSpeed,
+                y: symbol.startPosition.y,
+                ease: "bounce",
+            });
+        }));
+    }
 
     async function onButtonClick() {
         this.disable();
-
-        await Promise.all(reelSymbols.map(async (symbol) => {
-            await symbol.startBounce()
-            await symbol.moveOneSlot()
-            await symbol.moveOneSlot()
-            await symbol.endBounce()
-        }));
-
+        await animateSymbols();
         await this.enable();
     }
 
-    app.stage.addChild(buttonElement, reelElement);
+    button.setCallback(onButtonClick);
+
+    app.stage.addChild(button, reel);
 }
 
 
