@@ -45,17 +45,14 @@ function createSymbol(index: number, size: number = 75) {
         },
     };
 
-    return new Symbol(options);
+    const symbol = new Symbol(options);
+    symbol.setupAnimation(0.1, symbol.size, true);
+
+    return symbol;
 }
 
 function createReelWithSymbols() {
-
-    const reel = new Reel({
-        symbolsCount: 3,
-        moveCount: 2,
-        animationSpeed: 0.5,
-    });
-
+    const reel = new Reel(3);
     reel.addSymbols(createSymbol);
     reel.position.set(app.view.width / 2, 100);
 
@@ -64,58 +61,15 @@ function createReelWithSymbols() {
 
 function init() {
     const reel = createReelWithSymbols();
-    const symbols = reel.children as Array<Symbol>;
     const button = createButton();
+
     button.setCallback(onButtonClick);
 
-    app.stage.addChild(button, reel);
-    app.ticker.add(changeSymbolPosition);
-
-    function changeSymbolPosition() {
-        if (reel.isAnimated) {
-            const lastSymbol = symbols.pop();
-            symbols.unshift(lastSymbol);
-            symbols.forEach((symbol, i) => {
-                symbol.y = symbol.size * i + symbol.size;
-            });
-
-            reel.isAnimated = false;
-        }
-    }
-
-    async function animateSymbols() {
-        await Promise.all(symbols.map(async (symbol) => {
-
-            await symbol.startBounce({
-                duration: reel.animationSpeed,
-                y: `-=${symbol.size}`,
-                repeat: 2,
-                yoyo: true,
-            });
-
-            await reel.moveSlots(async () => {
-                await symbol.moveOneSlot({
-                    duration: reel.animationSpeed,
-                    y: `-=${symbol.size}`,
-                });
-            });
-
-            await symbol.endBounce({
-                duration: reel.animationSpeed,
-                y: symbol.startPosition.y,
-                ease: "bounce",
-            });
-        }));
-
-        reel.isAnimated = true;
-    }
-
     async function onButtonClick() {
-        this.disable();
-        await animateSymbols();
-        await this.enable();
+        button.disable();
+        await reel.start(10);
+        button.enable();
     }
+
+    app.stage.addChild(button, reel);
 }
-
-
-
