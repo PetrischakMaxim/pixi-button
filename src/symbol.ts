@@ -25,47 +25,36 @@ interface Options {
         x: number,
         y: number,
     }
-    animationDuration: number,
 }
 
 export default class Symbol extends Sprite implements SlotSymbol {
 
     private _animationConfig: AnimationConfig;
-    private readonly _size: number;
-    private _animationDuration: number;
-    private _startPosition: {
-        x: number,
-        y: number,
-    };
+    public size: number;
 
     constructor(options: Options) {
         super(options.texture);
-        this._size = options.size;
-        this._startPosition = options.position;
+        this.size = options.size;
         this.position.set(options.position.x, options.position.y);
         this.anchor.set(0.5);
-        this.scale.x = this.scale.y = Math.min(this._size / this.width, this._size / this.height);
-        this._addAnimation(options.animationDuration, this._size, this._startPosition.y);
+        this.scale.x = this.scale.y = Math.min(this.size / this.width, this.size / this.height);
     }
 
-    private _addAnimation(duration: number, size: number, posY: number) {
-        this._animationDuration = duration;
+    public setupAnimation(duration: number, offset: number, isBounced: boolean) {
+
+        const config = {
+            duration,
+            y: `-=${offset}`,
+            yoyo: isBounced,
+            repeat: isBounced ? 1 : 0
+        };
+
         this._animationConfig = {
-            start: {
-                duration: this._animationDuration,
-                y: `-=${size}`,
-                repeat: 0,
-                yoyo: true,
-            },
+            start: config,
             move: {
-                duration: this._animationDuration,
-                y: `-=${size}`,
+                duration
             },
-            end: {
-                duration: this._animationDuration,
-                y: posY,
-                ease: "bounce",
-            }
+            end: config
         }
     }
 
