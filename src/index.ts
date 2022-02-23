@@ -1,8 +1,7 @@
 import {Application, Loader} from "pixi.js";
-import {getRandomInt} from "./utils";
 import Button from "./button";
 import Symbol from "./symbol";
-
+import Reel from "./reel";
 
 const app = new Application({backgroundColor: 0x1099bb});
 
@@ -36,55 +35,41 @@ function createButton() {
     return button;
 }
 
-function createSymbol() {
-    const symbolSize = 100;
-    const startY = symbolSize * 3;
-
-    const animationOptions = {
-        start: {
-            duration: 1,
-            y: `-=${symbolSize}`,
-            repeat: 1,
-            yoyo: true,
+function createSymbol(index: number, size: number = 75) {
+    const options = {
+        texture: Loader.shared.resources[`symbol-${index}`].texture,
+        size: size,
+        position: {
+            x: 0,
+            y: index * size,
         },
-        move: {
-            duration: 1,
-            y: `-=${symbolSize}`,
-        },
-        end: {
-            duration: 1,
-            y: startY,
-            ease: "bounce",
-        }
     };
 
-    const symbol = new Symbol(
-        Loader.shared.resources[`symbol-${getRandomInt(1, 3)}`].texture,
-        symbolSize
-    );
-
-    symbol.position.set(app.view.width / 2,startY);
-    symbol.setupAnimation(animationOptions);
+    const symbol = new Symbol(options);
+    symbol.setupAnimation(0.1, symbol.size, true);
 
     return symbol;
 }
 
+function createReelWithSymbols() {
+    const reel = new Reel(3);
+    reel.addSymbols(createSymbol);
+    reel.position.set(app.view.width / 2, 100);
+
+    return reel;
+}
+
 function init() {
+    const reel = createReelWithSymbols();
     const button = createButton();
-    const symbol = createSymbol();
 
     button.setCallback(onButtonClick);
 
-    app.stage.addChild(button, symbol);
-
     async function onButtonClick() {
-        this.disable()
-        await symbol.startBounce()
-        await symbol.moveOneSlot()
-        await symbol.moveOneSlot()
-        await symbol.endBounce()
-        await this.enable()
+        button.disable();
+        await reel.start(10);
+        button.enable();
     }
+
+    app.stage.addChild(button, reel);
 }
-
-
